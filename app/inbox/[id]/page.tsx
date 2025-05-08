@@ -1,15 +1,12 @@
+import { notFound } from "next/navigation";
 import { db } from "@/lib/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
-import { notFound } from "next/navigation";
 
-import { type InferGetServerSidePropsType } from 'next';
-
-type PageProps = {
+export default async function Page({
+  params,
+}: {
   params: { id: string };
-};
-
-
-export default async function DetailInbox({ params }: { params: {id: string}}) {
+}) {
   const docRef = doc(db, "questions", params.id);
   const snap = await getDoc(docRef);
 
@@ -52,4 +49,3 @@ export default async function DetailInbox({ params }: { params: {id: string}}) {
     </div>
   );
 }
- 
