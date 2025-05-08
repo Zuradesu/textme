@@ -2,11 +2,22 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 
-export default async function Page({
+// ✅ Tambahan wajib agar typing tidak error saat build
+export async function generateStaticParams() {
+  return [];
+}
+
+// ✅ Gunakan function Page() biasa, non-async
+export default function Page({
   params,
 }: {
   params: { id: string };
 }) {
+  return <PageContent params={params} />;
+}
+
+// ✅ Logic async dipisah ke komponen ini
+async function PageContent({ params }: { params: { id: string } }) {
   const docRef = doc(db, "questions", params.id);
   const snap = await getDoc(docRef);
 
