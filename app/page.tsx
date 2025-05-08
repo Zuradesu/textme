@@ -1,57 +1,63 @@
-'use client'
+'use client';
 
-import { useState } from "react";
-import { db } from "@/lib/firebaseConfig";
-import { collection, addDoc, getDocs, serverTimestamp } from "firebase/firestore";
-import Link from "next/link";
-import { Geist, Geist_Mono, Bokor, Afacad_Flux } from "next/font/google";
-import { useEffect } from "react";
+import { useState, useEffect } from 'react';
+import { db } from '@/lib/firebaseConfig';
+import { collection, addDoc, getDocs, serverTimestamp } from 'firebase/firestore';
+import Link from 'next/link';
+import { Geist, Geist_Mono, Bokor, Afacad_Flux } from 'next/font/google';
 
-const bokorFont = Bokor({ subsets: ["latin"], weight: "400", variable: "--font-bokor" });
-const afacadFont = Afacad_Flux({ subsets: ["latin"], weight: "400", variable: "--font-afacad" });
-const geistSans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
-const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
+const bokorFont = Bokor({ subsets: ['latin'], weight: '400', variable: '--font-bokor' });
+const afacadFont = Afacad_Flux({ subsets: ['latin'], weight: '400', variable: '--font-afacad' });
+const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' });
+const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' });
+
+// ✅ Buat typing Question
+interface Question {
+  id: string;
+  text: string;
+  createdAt?: { seconds: number };
+}
 
 export default function Home() {
-  const [question, setQuestion] = useState("");
-  const [link, setLink] = useState("");
+  const [question, setQuestion] = useState('');
+  const [history, setHistory] = useState<Question[]>([]);
 
   const handleSubmit = async () => {
     if (!question.trim()) return;
 
     try {
-      const docRef = await addDoc(collection(db, "questions"), {
+      const docRef = await addDoc(collection(db, 'questions'), {
         text: question,
         createdAt: serverTimestamp(),
       });
 
-      const url = `${window.location.origin}/to/${docRef.id}`;
-      setLink(url);
-      setQuestion("");
+      // const url = `${window.location.origin}/to/${docRef.id}`;
+      setQuestion('');
     } catch (err) {
-      console.error("Gagal simpan ke Firebase:", err);
+      console.error('Gagal simpan ke Firebase:', err);
     }
   };
 
-  const [history, setHistory] = useState<any[]>([]);
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      const querySnapshot = await getDocs(collection(db, 'questions'));
+      const result: Question[] = querySnapshot.docs.map((doc) => {
+        const data = doc.data() as Omit<Question, 'id'>;
+        return {
+          id: doc.id,
+          ...data,
+        };
+      });
+      setHistory(result);
+    };
 
-useEffect(() => {
-  const fetchQuestions = async () => {
-    const querySnapshot = await getDocs(collection(db, "questions"));
-    const result = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setHistory(result);
-  };
-
-  fetchQuestions();
-}, []);
+    fetchQuestions();
+  }, []);
 
   return (
     <div
-      className={`bg-[#0D1B2A] min-h-screen flex flex-col items-center justify-start pt-32 px-6 font-[Afacad] text-white
-      ${bokorFont.variable} ${afacadFont.variable} ${geistSans.variable} ${geistMono.variable}`}
+      className={`bg-[#0D1B2A] min-h-screen flex flex-col items-center justify-start pt-32 px-6 font-[Afacad] text-white 
+        ${bokorFont.variable} ${afacadFont.variable} ${geistSans.variable} ${geistMono.variable}`}
     >
       <nav className="flex gap-6 mb-10">
         <Link href="/" className="px-4 py-1 rounded-full border border-white shadow-[0_0_8px_rgba(255,255,255,0.6)] font-medium text-sm">
@@ -80,30 +86,24 @@ useEffect(() => {
       >
         Generate Link
       </button>
-      
+
       {history.length > 0 && (
-  <div className="mt-8 w-full max-w-md space-y-4">
-    {history.map((q) => (
-      <div
-        key={q.id}
-        className="bg-white/10 px-4 py-2 rounded-xl hover:bg-white/20 transition border border-white/10"
-      >
-        <p className="text-white/90 text-base font-semibold">{q.text}</p>
-        <p className="text-sm text-gray-400">
-          <a
-            href={`/to/${q.id}`}
-            className="text-emerald-300 underline"
-            target="_blank"
-          >
-            View Link
-          </a>
-        </p>
-      </div>
-    ))}
-  </div>
-)}
-
-
+        <div className="mt-8 w-full max-w-md space-y-4">
+          {history.map((q) => (
+            <div
+              key={q.id}
+              className="bg-white/10 px-4 py-2 rounded-xl hover:bg-white/20 transition border border-white/10"
+            >
+              <p className="text-white/90 text-base font-semibold">{q.text}</p>
+              <p className="text-sm text-gray-400">
+                <a href={`/to/${q.id}`} className="text-emerald-300 underline" target="_blank">
+                  View Link
+                </a>
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
