@@ -1,21 +1,31 @@
 import { db } from "@/lib/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
-import Link from "next/link";
+import Link from "next/link"
 
-// ✅ Tambahkan interface supaya gak kena 'any'
+interface Answer {
+  text: string;
+  createdAt: number;
+}
+
 interface Question {
   id: string;
   text: string;
-  answers?: { text: string; createdAt: number }[];
+  answers?: Answer[];
 }
 
 export default async function InboxPage() {
   const querySnapshot = await getDocs(collection(db, "questions"));
 
-  const questions: Question[] = querySnapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...(doc.data() as Omit<Question, "id">),
-  }));
+  const questions: Question[] = querySnapshot.docs.map((doc) => {
+    const data = doc.data() as Omit<Question, "id">;
+    return {
+      id: doc.id,
+      text: data.text,
+      answers: data.answers ?? [],
+    };
+  });
+
+
 
   return (
     <div className="bg-[#0D1B2A] min-h-screen flex flex-col items-center justify-start pt-32 px-6 font-[Afacad] text-white">
