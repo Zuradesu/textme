@@ -2,11 +2,14 @@ import { db } from "@/lib/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { notFound } from "next/navigation";
 
-interface PageProps {
-  params: { id: string };
-}
+import { type InferGetServerSidePropsType } from 'next';
 
-export default async function DetailInbox({ params }: PageProps) {
+type PageProps = {
+  params: { id: string };
+};
+
+
+export default async function DetailInbox({ params }: { params: {id: string}}) {
   const docRef = doc(db, "questions", params.id);
   const snap = await getDoc(docRef);
 
