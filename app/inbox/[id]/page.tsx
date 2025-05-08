@@ -2,22 +2,14 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 
-// ✅ Tambahan wajib agar typing tidak error saat build
-export async function generateStaticParams() {
-  return [];
-}
+// ✅ WAJIB agar Next.js nggak error soal typing params
+export const dynamic = "force-dynamic";
 
-// ✅ Gunakan function Page() biasa, non-async
-export default function Page({
-  params,
-}: {
+interface Props {
   params: { id: string };
-}) {
-  return <PageContent params={params} />;
 }
 
-// ✅ Logic async dipisah ke komponen ini
-async function PageContent({ params }: { params: { id: string } }) {
+export default async function Page({ params }: Props) {
   const docRef = doc(db, "questions", params.id);
   const snap = await getDoc(docRef);
 
