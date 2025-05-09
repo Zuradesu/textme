@@ -4,10 +4,11 @@ import { notFound } from "next/navigation";
 import { sendAnswer } from "@/app/actions/sendAnswer";
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default async function ToPage({ params }: PageProps) {
+export default async function ToPage(props: PageProps) {
+  const params = await props.params;
   const docRef = doc(db, "questions", params.id);
   const snap = await getDoc(docRef);
 
