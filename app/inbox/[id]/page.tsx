@@ -1,16 +1,14 @@
+// app/inbox/[id]/page.tsx
 import { notFound } from "next/navigation";
 import { db } from "@/lib/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 
-// ✅ WAJIB agar Next.js nggak error soal typing params
-export const dynamic = "force-dynamic";
+type Params = Promise<{ id: string }>;
 
-interface Props {
-  params: { id: string };
-}
+export default async function Page({ params }: { params: Params }) {
+  const { id } = await params;
 
-export default async function Page({ params }: Props) {
-  const docRef = doc(db, "questions", params.id);
+  const docRef = doc(db, "questions", id);
   const snap = await getDoc(docRef);
 
   if (!snap.exists()) return notFound();
